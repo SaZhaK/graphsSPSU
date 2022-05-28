@@ -16,13 +16,13 @@ import java.util.Set;
  */
 public class RemoveUtil {
 	/**
-	 * Method to get a given amount of random vertecies
+	 * Method to get a given amount of random vertices
 	 *
 	 * @param graph
-	 * @param amount - amount of vertecies to be selected
-	 * @return list of selected vertecies
+	 * @param amount - amount of vertices to be selected
+	 * @return list of selected vertices
 	 */
-	public static List<Integer> selectRandom(Map<Integer, List<Integer>> graph, int amount) {
+	public static List<Integer> selectRandom(Map<Integer, Set<Integer>> graph, int amount) {
 		Random random = new Random();
 		Set<Integer> selected = new HashSet<>();
 		while (selected.size() < amount) {
@@ -40,19 +40,19 @@ public class RemoveUtil {
 	}
 
 	/**
-	 * Method to remove all vertecies except given ones from a given graph
+	 * Method to remove all vertices except given ones from a given graph
 	 * Important! graph will be modified
 	 *
 	 * @param graph
-	 * @param toBeLeft - set of vertecies to be left after remove
-	 * @return graph with removed vertecies
+	 * @param toBeLeft - set of vertices to be left after remove
+	 * @return graph with removed vertices
 	 */
-	public static Map<Integer, List<Integer>> removeExcept(Map<Integer, List<Integer>> graph, Set<Integer> toBeLeft) {
-		Map<Integer, List<Integer>> newGraph = new HashMap<>();
+	public static Map<Integer, Set<Integer>> removeExcept(Map<Integer, Set<Integer>> graph, Set<Integer> toBeLeft) {
+		Map<Integer, Set<Integer>> newGraph = new HashMap<>();
 		for (Integer vertex : graph.keySet()) {
 			if (toBeLeft.contains(vertex)) {
-				List<Integer> edges = graph.get(vertex);
-				List<Integer> newEdges = new ArrayList<>();
+				Set<Integer> edges = graph.get(vertex);
+				Set<Integer> newEdges = new HashSet<>();
 				for (Integer edge : edges) {
 					if (toBeLeft.contains(edge)) {
 						newEdges.add(edge);
@@ -66,14 +66,14 @@ public class RemoveUtil {
 	}
 
 	/**
-	 * Method to remove given percent of vertecies
+	 * Method to remove given percent of vertices
 	 * Important! graph will be modified
 	 *
 	 * @param graph
 	 * @param percentToBeRemoved
-	 * @return graph with removed vertecies
+	 * @return graph with removed vertices
 	 */
-	public static Map<Integer, List<Integer>> removeRandom(Map<Integer, List<Integer>> graph, int percentToBeRemoved) {
+	public static Map<Integer, Set<Integer>> removeRandom(Map<Integer, Set<Integer>> graph, int percentToBeRemoved) {
 		Random random = new Random();
 		int size = graph.size();
 		int amountToBeRemoved = size * percentToBeRemoved / 100;
@@ -94,11 +94,11 @@ public class RemoveUtil {
 			}
 		}
 
-		Map<Integer, List<Integer>> result = new HashMap<>();
+		Map<Integer, Set<Integer>> result = new HashMap<>();
 		for (Integer vertex : graph.keySet()) {
 			if (!toBeRemoved.contains(vertex)) {
-				List<Integer> edges = graph.get(vertex);
-				List<Integer> newEdges = new ArrayList<>();
+				Set<Integer> edges = graph.get(vertex);
+				Set<Integer> newEdges = new HashSet<>();
 				for (Integer edge : edges) {
 					if (!toBeRemoved.contains(edge)) {
 						newEdges.add(edge);
@@ -119,12 +119,12 @@ public class RemoveUtil {
 	 * @param percentToBeRemoved
 	 * @return graph with removed vertecies
 	 */
-	public static Map<Integer, List<Integer>> removeWithBiggestPower(Map<Integer, List<Integer>> graph, int percentToBeRemoved) {
+	public static Map<Integer, Set<Integer>> removeWithBiggestPower(Map<Integer, Set<Integer>> graph, int percentToBeRemoved) {
 		int size = graph.size();
 		int amountToBeRemoved = size * percentToBeRemoved / 100;
 
 		Set<Integer> toBeRemoved = new HashSet<>();
-		Map<Integer, List<Integer>> sorted = sortByValue(graph);
+		Map<Integer, Set<Integer>> sorted = sortByValue(graph);
 
 		int removed = 0;
 		for (Integer vertex : sorted.keySet()) {
@@ -136,11 +136,11 @@ public class RemoveUtil {
 			}
 		}
 
-		Map<Integer, List<Integer>> result = new HashMap<>();
+		Map<Integer, Set<Integer>> result = new HashMap<>();
 		for (Integer vertex : graph.keySet()) {
 			if (!toBeRemoved.contains(vertex)) {
-				List<Integer> edges = graph.get(vertex);
-				List<Integer> newEdges = new ArrayList<>();
+				Set<Integer> edges = graph.get(vertex);
+				Set<Integer> newEdges = new HashSet<>();
 				for (Integer edge : edges) {
 					if (!toBeRemoved.contains(edge)) {
 						newEdges.add(edge);
@@ -153,13 +153,13 @@ public class RemoveUtil {
 		return result;
 	}
 
-	private static Map<Integer, List<Integer>> sortByValue(Map<Integer, List<Integer>> graph) {
-		List<Map.Entry<Integer, List<Integer>>> list = new ArrayList<>(graph.entrySet());
+	private static Map<Integer, Set<Integer>> sortByValue(Map<Integer, Set<Integer>> graph) {
+		List<Map.Entry<Integer, Set<Integer>>> list = new ArrayList<>(graph.entrySet());
 		list.sort(Comparator.comparing(it -> it.getValue().size()));
 		Collections.reverse(list);
 
-		Map<Integer, List<Integer>> result = new LinkedHashMap<>();
-		for (Map.Entry<Integer, List<Integer>> entry : list) {
+		Map<Integer, Set<Integer>> result = new LinkedHashMap<>();
+		for (Map.Entry<Integer, Set<Integer>> entry : list) {
 			result.put(entry.getKey(), entry.getValue());
 		}
 

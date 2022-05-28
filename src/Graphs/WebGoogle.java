@@ -25,22 +25,22 @@ import java.util.Map;
 import java.util.Set;
 
 public class WebGoogle {
-	private Map<Integer, List<Integer>> loadGraph(boolean loadAsOriented) throws IOException {
+	private Map<Integer, Set<Integer>> loadGraph(boolean loadAsOriented) throws IOException {
 		Path path = Paths.get("src/Graphs/email-Eu-core.txt");
 
 		//Path path = Paths.get("src/Graphs/test.txt");
 		List<String> input = Files.readAllLines(path);
 
-		Map<Integer, List<Integer>> graph = new HashMap<>();
+		Map<Integer, Set<Integer>> graph = new HashMap<>();
 		for (String s : input) {
 			if (!s.startsWith("#")) {
 				String[] split = s.split(" ");
 				int fromNode = Integer.parseInt(split[0]);
 				int toNode = Integer.parseInt(split[1]);
 
-				List<Integer> curEdges;
+				Set<Integer> curEdges;
 				if (!graph.containsKey(fromNode)) {
-					curEdges = new ArrayList<>();
+					curEdges = new HashSet<>();
 				} else {
 					curEdges = graph.get(fromNode);
 				}
@@ -48,13 +48,13 @@ public class WebGoogle {
 					curEdges.add(toNode);
 				}
 				if (!graph.containsKey(toNode)) {
-					graph.put(toNode, new ArrayList<>());
+					graph.put(toNode, new HashSet<>());
 				}
 				graph.put(fromNode, curEdges);
 
 				if (!loadAsOriented) {
 					if (!graph.containsKey(toNode)) {
-						curEdges = new ArrayList<>();
+						curEdges = new HashSet<>();
 					} else {
 						curEdges = graph.get(toNode);
 					}
@@ -62,7 +62,7 @@ public class WebGoogle {
 						curEdges.add(fromNode);
 					}
 					if (!graph.containsKey(fromNode)) {
-						graph.put(fromNode, new ArrayList<>());
+						graph.put(fromNode, new HashSet<>());
 					}
 					graph.put(toNode, curEdges);
 				}
@@ -71,64 +71,60 @@ public class WebGoogle {
 		return graph;
 	}
 
-	private int countEdges(Map<Integer, List<Integer>> graph) {
+	private int countEdges(Map<Integer, Set<Integer>> graph) {
 		return countEdgesOriented(graph) * 2;
 	}
 
-	private int countEdgesOriented(Map<Integer, List<Integer>> graph) {
+	private int countEdgesOriented(Map<Integer, Set<Integer>> graph) {
 		return graph.values().stream().mapToInt(Collection::size).sum();
 	}
 
-	private static List<Integer> findMaxComponent(List<List<Integer>> connectivityComponents) {
+	private static Set<Integer> findMaxComponent(List<Set<Integer>> connectivityComponents) {
 		return connectivityComponents.stream()
-				.max(Comparator.comparing(List::size))
+				.max(Comparator.comparing(Set::size))
 				.get();
 	}
 
-	private static Map<Integer, List<Integer>> createComponentGraph(List<Integer> maxComponent, Map<Integer, List<Integer>> graph) {
-
-
-		Map<Integer, List<Integer>> result = new HashMap<>();
-
-		for (int i = 0; i < maxComponent.size(); i++) {
-			Integer vertex = maxComponent.get(i);
-			List<Integer> oldLinks = graph.get(vertex);
+	private static Map<Integer, Set<Integer>> createComponentGraph(Set<Integer> maxComponent, Map<Integer, Set<Integer>> graph) {
+		Map<Integer, Set<Integer>> result = new HashMap<>();
+		for (Integer vertex : maxComponent) {
+			Set<Integer> oldLinks = graph.get(vertex);
 			result.put(vertex, oldLinks);
 		}
 		return result;
 	}
 
-	static Map<Integer, List<Integer>> copy(Map<Integer, List<Integer>> graph) {
-		Map<Integer, List<Integer>> newGraph = new HashMap<>();
-		for (Integer vertex : graph.keySet()) {
-			List<Integer> edges = graph.get(vertex);
-
-			List<Integer> newEdges = new ArrayList<>(edges);
-			newGraph.put(vertex, newEdges);
-		}
-		return newGraph;
-	}
-
-	static Map<Integer, List<Integer>> cast(Map<Integer, Set<Integer>> graph) {
-		Map<Integer, List<Integer>> newGraph = new HashMap<>();
+	static Map<Integer, Set<Integer>> copy(Map<Integer, Set<Integer>> graph) {
+		Map<Integer, Set<Integer>> newGraph = new HashMap<>();
 		for (Integer vertex : graph.keySet()) {
 			Set<Integer> edges = graph.get(vertex);
 
-			List<Integer> newEdges = new ArrayList<>(edges);
+			Set<Integer> newEdges = new HashSet<>(edges);
 			newGraph.put(vertex, newEdges);
 		}
 		return newGraph;
 	}
 
-	static void testB(Map<Integer, List<Integer>> graph) throws FileNotFoundException {
+	static Map<Integer, Set<Integer>> cast(Map<Integer, Set<Integer>> graph) {
+		Map<Integer, Set<Integer>> newGraph = new HashMap<>();
+		for (Integer vertex : graph.keySet()) {
+			Set<Integer> edges = graph.get(vertex);
+
+			Set<Integer> newEdges = new HashSet<>(edges);
+			newGraph.put(vertex, newEdges);
+		}
+		return newGraph;
+	}
+
+	static void testB(Map<Integer, Set<Integer>> graph) throws FileNotFoundException {
 		PrintWriter writer = new PrintWriter("src/Graphs/output.txt");
 
 		for (int i = 0; i < 100; i += 10) {
-			Map<Integer, List<Integer>> copy = copy(graph);
-			Map<Integer, List<Integer>> removed = RemoveUtil.removeWithBiggestPower(copy, i);
+			Map<Integer, Set<Integer>> copy = copy(graph);
+			Map<Integer, Set<Integer>> removed = RemoveUtil.removeWithBiggestPower(copy, i);
 
-			List<List<Integer>> connectivityComponents = ConnectivityComponentsUtil.countConnectivityComponents(removed);
-			List<Integer> maxComponent = findMaxComponent(connectivityComponents);
+			List<Set<Integer>> connectivityComponents = ConnectivityComponentsUtil.countConnectivityComponents(removed);
+			Set<Integer> maxComponent = findMaxComponent(connectivityComponents);
 			int maxComponentSize = maxComponent.size();
 			double maxComponentPercent = 1. * maxComponentSize / graph.size();
 			writer.println(maxComponentPercent);
@@ -136,13 +132,13 @@ public class WebGoogle {
 		writer.close();
 	}
 
-	public static void analyseMetaGraph(Map<Integer, List<Integer>> mgList, PrintWriter writer) {
+	public static void analyseMetaGraph(Map<Integer, Set<Integer>> mgList, PrintWriter writer) {
 		writer.println(ClusterUtil.countDistribution(mgList));
 		int moreCounter = 0;
 		int lessCounter = 0;
 		Set<Integer> toBeLeft = new HashSet<>();
 		for (Integer key : mgList.keySet()) {
-			List<Integer> edges = mgList.get(key);
+			Set<Integer> edges = mgList.get(key);
 			if (edges.size() > 10) {
 				moreCounter++;
 				toBeLeft.add(key);
@@ -153,7 +149,7 @@ public class WebGoogle {
 		writer.println("More: " + moreCounter);
 		writer.println("Less: " + lessCounter);
 
-		Map<Integer, List<Integer>> mgListRemoved = RemoveUtil.removeExcept(mgList, toBeLeft);
+		Map<Integer, Set<Integer>> mgListRemoved = RemoveUtil.removeExcept(mgList, toBeLeft);
 		writer.println(mgListRemoved);
 	}
 
@@ -161,7 +157,7 @@ public class WebGoogle {
 		boolean isOriented = false;
 
 		WebGoogle webGoogle = new WebGoogle();
-		Map<Integer, List<Integer>> graph = webGoogle.loadGraph(isOriented);
+		Map<Integer, Set<Integer>> graph = webGoogle.loadGraph(isOriented);
 
 		int edgesAmount;
 		if (isOriented) {
@@ -182,10 +178,10 @@ public class WebGoogle {
 		BigDecimal density = edgesAmount1.divide(maxEdgesAmount, 10, RoundingMode.HALF_UP);
 		writer.println("Плотность: " + density);
 
-		List<List<Integer>> connectivityComponents = ConnectivityComponentsUtil.countConnectivityComponents(graph);
+		List<Set<Integer>> connectivityComponents = ConnectivityComponentsUtil.countConnectivityComponents(graph);
 		writer.println("Число компонент слабой связности: " + connectivityComponents.size());
 
-		List<Integer> maxComponent = webGoogle.findMaxComponent(connectivityComponents);
+		Set<Integer> maxComponent = webGoogle.findMaxComponent(connectivityComponents);
 		int maxComponentSize = maxComponent.size();
 		double maxComponentPercent = 1. * maxComponentSize / graph.size();
 		//writer.println("Максимальная по мощности компонента слабой связности: " + maxComponent);
@@ -193,10 +189,10 @@ public class WebGoogle {
 		writer.println("Доля вершин в максимальной компоненте слабой связности: " + maxComponentPercent);
 
 		if (isOriented) {
-			List<List<Integer>> strongConnectivityComponents = StrongConnectivityComponentsUtil.getScComponents(graph);
+			List<Set<Integer>> strongConnectivityComponents = StrongConnectivityComponentsUtil.getScComponents(graph);
 			writer.println("Число компонент сильной связности: " + strongConnectivityComponents.size());
 
-			List<Integer> maxStrongComponent = webGoogle.findMaxComponent(strongConnectivityComponents);
+			Set<Integer> maxStrongComponent = webGoogle.findMaxComponent(strongConnectivityComponents);
 			int maxStrongComponentSize = maxStrongComponent.size();
 			double maxStrongComponentPercent = 1. * maxStrongComponentSize / graph.size();
 			//writer.println("Максимальная по мощности компонента сильной связности: " + maxStrongComponent);
@@ -208,8 +204,8 @@ public class WebGoogle {
 			//writer.println(metaGraph);
 		}
 
-		Map<Integer, List<Integer>> maxComponentGraph = createComponentGraph(maxComponent, graph);
-		Map<Integer, List<Integer>> copy = copy(maxComponentGraph);
+		Map<Integer, Set<Integer>> maxComponentGraph = createComponentGraph(maxComponent, graph);
+		Map<Integer, Set<Integer>> copy = copy(maxComponentGraph);
 		List<Integer> selected = RemoveUtil.selectRandom(copy, 500);
 
 		DistanceUtil distanceUtil = new DistanceUtil(graph, selected);

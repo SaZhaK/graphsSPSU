@@ -22,9 +22,9 @@ public class StrongConnectivityComponentsUtil {
 	 * Method to get a list of strong connectivity components of a graph via Kosaraju method
 	 *
 	 * @param graph
-	 * @return list of lists - each list is a separate component
+	 * @return list of sets - each set contains vertices from a separate connectivity component
 	 */
-	public static List<List<Integer>> getScComponents(Map<Integer, List<Integer>> graph) {
+	public static List<Set<Integer>> getScComponents(Map<Integer, Set<Integer>> graph) {
 		int size = graph.size();
 		Map<Integer, Boolean> vis = new HashMap<>();
 		for (Integer key : graph.keySet()) {
@@ -36,9 +36,9 @@ public class StrongConnectivityComponentsUtil {
 		}
 		AtomicInteger x = new AtomicInteger(size);
 
-		Map<Integer, List<Integer>> t = new HashMap<>();
+		Map<Integer, Set<Integer>> t = new HashMap<>();
 		for (Integer key : graph.keySet()) {
-			t.put(key, new ArrayList<>());
+			t.put(key, new HashSet<>());
 		}
 
 		Recursive<IntConsumer> visit = new Recursive<>();
@@ -75,14 +75,14 @@ public class StrongConnectivityComponentsUtil {
 			assign.func.accept(u, u);
 		}
 
-		Map<Integer, List<Integer>> result = new HashMap<>();
+		Map<Integer, Set<Integer>> result = new HashMap<>();
 
 		for (Integer key : c.keySet()) {
 			int value = c.get(key);
 
-			List<Integer> list;
+			Set<Integer> list;
 			if (result.get(value) == null) {
-				list = new ArrayList<>();
+				list = new HashSet<>();
 			} else {
 				list = result.get(value);
 			}
@@ -90,7 +90,7 @@ public class StrongConnectivityComponentsUtil {
 			result.put(value, list);
 		}
 
-		List<List<Integer>> result2 = new ArrayList<>();
+		List<Set<Integer>> result2 = new ArrayList<>();
 		for (Integer key : result.keySet()) {
 			result2.add(result.get(key));
 		}
@@ -105,12 +105,12 @@ public class StrongConnectivityComponentsUtil {
 	 * @param scComponents - list of strong connectivity components of a graph
 	 * @return meta-graph
 	 */
-	public static Map<Integer, Set<Integer>> buildMetaGraph(Map<Integer, List<Integer>> graph, List<List<Integer>> scComponents) {
+	public static Map<Integer, Set<Integer>> buildMetaGraph(Map<Integer, Set<Integer>> graph, List<Set<Integer>> scComponents) {
 		Map<Integer, Integer> extended = new HashMap<>();
 		for (int i = 0; i < scComponents.size(); i++) {
-			List<Integer> component = scComponents.get(i);
-			for (int j = 0; j < component.size(); j++) {
-				extended.put(component.get(j), i);
+			Set<Integer> component = scComponents.get(i);
+			for (Integer vertex : component) {
+				extended.put(vertex, i);
 			}
 		}
 
@@ -119,7 +119,7 @@ public class StrongConnectivityComponentsUtil {
 		for (Integer vertex : graph.keySet()) {
 			Integer component1 = extended.get(vertex);
 
-			List<Integer> edges = graph.get(vertex);
+			Set<Integer> edges = graph.get(vertex);
 			for (Integer edge : edges) {
 				Integer component2 = extended.get(edge);
 

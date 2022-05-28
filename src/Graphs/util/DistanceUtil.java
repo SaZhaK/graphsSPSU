@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * Utility class for counting distance parameters of a graph
@@ -20,9 +21,9 @@ public class DistanceUtil {
 	 * Constructor
 	 *
 	 * @param graph
-	 * @param selected - sample list of vertecies to count distances
+	 * @param selected - sample list of vertices to count distances
 	 */
-	public DistanceUtil(Map<Integer, List<Integer>> graph, List<Integer> selected) {
+	public DistanceUtil(Map<Integer, Set<Integer>> graph, List<Integer> selected) {
 		eccentricities = new HashMap<>();
 		radius = Integer.MAX_VALUE;
 		diameter = Integer.MIN_VALUE;
@@ -47,7 +48,7 @@ public class DistanceUtil {
 	 * @param endVertex
 	 * @return distance
 	 */
-	public int BFS(Map<Integer, List<Integer>> graph, int startVertex, int endVertex) {
+	public int BFS(Map<Integer, Set<Integer>> graph, int startVertex, int endVertex) {
 		int counter = 0;
 		Queue<Integer> q1 = new PriorityQueue<>();
 		Queue<Integer> q2 = new PriorityQueue<>();
@@ -65,10 +66,10 @@ public class DistanceUtil {
 					return counter;
 				}
 
-				List<Integer> neighbours = graph.get(vertex);
-				for (int i = 0; i < neighbours.size(); i++) {
-					q2.add(neighbours.get(i));
-					visited.put(neighbours.get(i), true);
+				Set<Integer> neighbours = graph.get(vertex);
+				for (Integer neighbour : neighbours) {
+					q2.add(neighbour);
+					visited.put(neighbour, true);
 				}
 
 				if (q1.isEmpty()) {
@@ -81,10 +82,10 @@ public class DistanceUtil {
 					return counter;
 				}
 
-				List<Integer> neighbours = graph.get(vertex);
-				for (int i = 0; i < neighbours.size(); i++) {
-					q1.add(neighbours.get(i));
-					visited.put(neighbours.get(i), true);
+				Set<Integer> neighbours = graph.get(vertex);
+				for (Integer neighbour : neighbours) {
+					q1.add(neighbour);
+					visited.put(neighbour, true);
 				}
 
 				if (q2.isEmpty()) {
@@ -138,7 +139,7 @@ public class DistanceUtil {
 		return result;
 	}
 
-	private int breadthFirstSearch(Map<Integer, List<Integer>> graph, int sourceVertex) {
+	private int breadthFirstSearch(Map<Integer, Set<Integer>> graph, int sourceVertex) {
 		Queue<Integer> queue = new PriorityQueue<>();
 		Map<Integer, Integer> distanceToSource = new HashMap<>();
 
@@ -156,7 +157,7 @@ public class DistanceUtil {
 		while (!queue.isEmpty()) {
 			int thisVertex = queue.remove();
 
-			List<Integer> adjacent = graph.get(thisVertex);
+			Set<Integer> adjacent = graph.get(thisVertex);
 
 			for (int adjacentVertex : adjacent) {
 				if (!isVisited.get(adjacentVertex)) {

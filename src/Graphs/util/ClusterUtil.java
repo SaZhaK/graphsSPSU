@@ -1,8 +1,8 @@
 package Graphs.util;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility class for counting cluster coefficients of graph
@@ -15,7 +15,7 @@ public class ClusterUtil {
 	 * @param vertex
 	 * @return power of vertex
 	 */
-	public static int countPower(Map<Integer, List<Integer>> graph, int vertex) {
+	public static int countPower(Map<Integer, Set<Integer>> graph, int vertex) {
 		return graph.get(vertex).size();
 	}
 
@@ -26,7 +26,7 @@ public class ClusterUtil {
 	 * @param vertex
 	 * @return local cluster coefficient
 	 */
-	public static double countLocalClusterCoefficient(Map<Integer, List<Integer>> graph, int vertex) {
+	public static double countLocalClusterCoefficient(Map<Integer, Set<Integer>> graph, int vertex) {
 		int power = countPower(graph, vertex);
 		if (power < 2) {
 			return 0;
@@ -42,7 +42,7 @@ public class ClusterUtil {
 	 * @param graph
 	 * @return medium cluster coefficient
 	 */
-	public static double countMediumClusterCoefficient(Map<Integer, List<Integer>> graph) {
+	public static double countMediumClusterCoefficient(Map<Integer, Set<Integer>> graph) {
 		double result = 0;
 		for (Integer vertex : graph.keySet()) {
 			result += countLocalClusterCoefficient(graph, vertex);
@@ -56,7 +56,7 @@ public class ClusterUtil {
 	 * @param graph
 	 * @return global cluster coefficient
 	 */
-	public static double countGlobalClusterCoefficient(Map<Integer, List<Integer>> graph) {
+	public static double countGlobalClusterCoefficient(Map<Integer, Set<Integer>> graph) {
 		double numerator = 0;
 		double denominator = 0;
 		for (Integer vertex : graph.keySet()) {
@@ -74,7 +74,7 @@ public class ClusterUtil {
 	 * @param graph
 	 * @return min vertex power in a graph
 	 */
-	public static int countMinPower(Map<Integer, List<Integer>> graph) {
+	public static int countMinPower(Map<Integer, Set<Integer>> graph) {
 		int min = Integer.MAX_VALUE;
 		for (Integer vertex : graph.keySet()) {
 			int power = countPower(graph, vertex);
@@ -89,7 +89,7 @@ public class ClusterUtil {
 	 * @param graph
 	 * @rerurn max vertex power in a graph
 	 */
-	public static int countMaxPower(Map<Integer, List<Integer>> graph) {
+	public static int countMaxPower(Map<Integer, Set<Integer>> graph) {
 		int max = Integer.MIN_VALUE;
 		for (Integer vertex : graph.keySet()) {
 			int power = countPower(graph, vertex);
@@ -104,7 +104,7 @@ public class ClusterUtil {
 	 * @param graph
 	 * @return average vertex power in a graph
 	 */
-	public static int countAveragePower(Map<Integer, List<Integer>> graph) {
+	public static int countAveragePower(Map<Integer, Set<Integer>> graph) {
 		int sum = 0;
 		for (Integer vertex : graph.keySet()) {
 			int power = countPower(graph, vertex);
@@ -119,7 +119,7 @@ public class ClusterUtil {
 	 * @param graph
 	 * @return distribution function of graph's vertecies
 	 */
-	public static Map<Integer, Double> countDistribution(Map<Integer, List<Integer>> graph) {
+	public static Map<Integer, Double> countDistribution(Map<Integer, Set<Integer>> graph) {
 		Map<Integer, Double> distribution = new HashMap<>();
 		for (Integer vertex : graph.keySet()) {
 			int power = countPower(graph, vertex);
@@ -141,12 +141,11 @@ public class ClusterUtil {
 		return distribution;
 	}
 
-	private static int countNeighboursEdges(Map<Integer, List<Integer>> graph, int vertex) {
-		List<Integer> neighbours = graph.get(vertex);
+	private static int countNeighboursEdges(Map<Integer, Set<Integer>> graph, int vertex) {
+		Set<Integer> neighbours = graph.get(vertex);
 		int count = 0;
-		for (int i = 0; i < neighbours.size(); i++) {
-			int curNeighbour = neighbours.get(i);
-			List<Integer> neighboursOfCurNeighbour = graph.get(curNeighbour);
+		for(Integer curNeighbour : neighbours){
+			Set<Integer> neighboursOfCurNeighbour = graph.get(curNeighbour);
 
 			for (Integer neighbour : neighboursOfCurNeighbour) {
 				if (neighbours.contains(neighbour)) {

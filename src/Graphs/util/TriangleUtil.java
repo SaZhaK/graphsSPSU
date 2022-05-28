@@ -1,22 +1,22 @@
 package Graphs.util;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
  * Utility class for counting number of triangles in a given graph
  */
 public class TriangleUtil {
-	private Map<Integer, List<Integer>> graph;
+	private Map<Integer, Set<Integer>> graph;
 
 	/**
 	 * Constructor
 	 *
 	 * @param graph
 	 */
-	public TriangleUtil(Map<Integer, List<Integer>> graph) {
+	public TriangleUtil(Map<Integer, Set<Integer>> graph) {
 		this.graph = graph;
 	}
 
