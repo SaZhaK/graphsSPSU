@@ -1,45 +1,110 @@
 package Graphs.util;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
 
+/**
+ * Utility class for finding strong connectivity components util
+ */
 public class StrongConnectivityComponentsUtil {
-	private static Map<Integer, Boolean> visited;
-
-	public static List<List<Integer>> getSCComponents(Map<Integer, List<Integer>> graph) {
-		int V = graph.size();
-
-		visited = new HashMap<>();
-		for (Integer vertex : graph.keySet()) {
-			visited.put(vertex, false);
-		}
-
-		List<Integer> order = fillOrder(graph);
-		Map<Integer, List<Integer>> reverseGraph = getTranspose(graph);
-
-		visited = new HashMap<>();
-		for (Integer vertex : graph.keySet()) {
-			visited.put(vertex, false);
-		}
-
-		Collections.reverse(order);
-
-		List<List<Integer>> SCComp = new ArrayList<>();
-		for (int v : order) {
-			if (!visited.get(v)) {
-				List<Integer> comp = new ArrayList<>();
-				DFS(reverseGraph, v, comp);
-				SCComp.add(comp);
-			}
-		}
-		return SCComp;
+	static class Recursive<I> {
+		I func;
 	}
 
+	/**
+	 * Method to get a list of strong connectivity components of a graph via Kosaraju method
+	 *
+	 * @param graph
+	 * @return list of lists - each list is a separate component
+	 */
+	public static List<List<Integer>> getScComponents(Map<Integer, List<Integer>> graph) {
+		int size = graph.size();
+		Map<Integer, Boolean> vis = new HashMap<>();
+		for (Integer key : graph.keySet()) {
+			vis.put(key, false);
+		}
+		Map<Integer, Integer> l = new HashMap<>();
+		for (Integer key : graph.keySet()) {
+			l.put(key, 0);
+		}
+		AtomicInteger x = new AtomicInteger(size);
+
+		Map<Integer, List<Integer>> t = new HashMap<>();
+		for (Integer key : graph.keySet()) {
+			t.put(key, new ArrayList<>());
+		}
+
+		Recursive<IntConsumer> visit = new Recursive<>();
+		visit.func = (int u) -> {
+			if (!vis.get(u)) {
+				vis.put(u, true);
+				for (Integer v : graph.get(u)) {
+					visit.func.accept(v);
+					t.get(v).add(u);
+				}
+				int xval = x.decrementAndGet();
+				l.put(xval, u);
+			}
+		};
+
+		for (Integer key : graph.keySet()) {
+			visit.func.accept(key);
+
+		}
+		Map<Integer, Integer> c = new HashMap<>();
+
+		Recursive<BiConsumer<Integer, Integer>> assign = new Recursive<>();
+		assign.func = (Integer u, Integer root) -> {
+			if (vis.get(u)) {
+				vis.put(u, false);
+				c.put(u, root);
+				for (Integer v : t.get(u)) {
+					assign.func.accept(v, root);
+				}
+			}
+		};
+
+		for (int u : l.values()) {
+			assign.func.accept(u, u);
+		}
+
+		Map<Integer, List<Integer>> result = new HashMap<>();
+
+		for (Integer key : c.keySet()) {
+			int value = c.get(key);
+
+			List<Integer> list;
+			if (result.get(value) == null) {
+				list = new ArrayList<>();
+			} else {
+				list = result.get(value);
+			}
+			list.add(key);
+			result.put(value, list);
+		}
+
+		List<List<Integer>> result2 = new ArrayList<>();
+		for (Integer key : result.keySet()) {
+			result2.add(result.get(key));
+		}
+
+		return result2;
+	}
+
+	/**
+	 * Method to get a meta-graph from strong connectivity components of a given graph
+	 *
+	 * @param graph
+	 * @param scComponents - list of strong connectivity components of a graph
+	 * @return meta-graph
+	 */
 	public static Map<Integer, Set<Integer>> buildMetaGraph(Map<Integer, List<Integer>> graph, List<List<Integer>> scComponents) {
 		Map<Integer, Integer> extended = new HashMap<>();
 		for (int i = 0; i < scComponents.size(); i++) {
@@ -70,48 +135,5 @@ public class StrongConnectivityComponentsUtil {
 		}
 
 		return metaGraph;
-	}
-
-	private static void DFS(Map<Integer, List<Integer>> graph, int vertex, List<Integer> component) {
-		visited.put(vertex, true);
-
-		List<Integer> vertecies = graph.get(vertex);
-		if (vertecies != null) {
-			for (int i = 0; i < graph.get(vertex).size(); i++) {
-				if (visited.get(graph.get(vertex).get(i)) != null && !visited.get(graph.get(vertex).get(i))) {
-					DFS(graph, graph.get(vertex).get(i), component);
-				}
-			}
-		}
-		component.add(vertex);
-	}
-
-	private static List<Integer> fillOrder(Map<Integer, List<Integer>> graph) {
-		List<Integer> order = new ArrayList<>();
-		for (Integer vertex : graph.keySet()) {
-			if (!visited.get(vertex)) {
-				DFS(graph, vertex, order);
-			}
-		}
-		return order;
-	}
-
-	private static Map<Integer, List<Integer>> getTranspose(Map<Integer, List<Integer>> graph) {
-		Map<Integer, List<Integer>> g = new HashMap<>();
-
-		for (Integer vertex : graph.keySet()) {
-			for (int i = 0; i < graph.get(vertex).size(); i++) {
-
-				List<Integer> list;
-				if (!g.containsKey(graph.get(vertex).get(i))) {
-					list = new ArrayList<>();
-				} else {
-					list = g.get(graph.get(vertex).get(i));
-				}
-				list.add(vertex);
-				g.put(graph.get(vertex).get(i), list);
-			}
-		}
-		return g;
 	}
 }

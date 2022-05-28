@@ -5,11 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class for finding weak connectivity components of graph
+ */
 public class ConnectivityComponentsUtil {
 	private static List<List<Integer>> connectivityComponents;
 	private static Map<Integer, Boolean> visited;
 	private static int idx;
 
+	/**
+	 * Method for finding list of weak connectivity components of a given graph
+	 *
+	 * @param graph
+	 * @return list of lists - each list is a separate connectivity component
+	 */
 	public static List<List<Integer>> countConnectivityComponents(Map<Integer, List<Integer>> graph) {
 		idx = 0;
 		connectivityComponents = new ArrayList<>();

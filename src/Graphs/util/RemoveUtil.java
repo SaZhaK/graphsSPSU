@@ -8,19 +8,46 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Utility class for getting subgraphs of a given graph
+ */
 public class RemoveUtil {
-	public static Map<Integer, List<Integer>> removeRandomByCount(Map<Integer, List<Integer>> graph, int amountToBeLeft) {
-		int idx = 0;
-		Set toBeLeft = breadthFirstSearch(graph, idx);
-		while (toBeLeft == null) {
-			toBeLeft = breadthFirstSearch(graph, ++idx);
+	/**
+	 * Method to get a given amount of random vertecies
+	 *
+	 * @param graph
+	 * @param amount - amount of vertecies to be selected
+	 * @return list of selected vertecies
+	 */
+	public static List<Integer> selectRandom(Map<Integer, List<Integer>> graph, int amount) {
+		Random random = new Random();
+		Set<Integer> selected = new HashSet<>();
+		while (selected.size() < amount) {
+			for (Integer vertex : graph.keySet()) {
+				if (random.nextBoolean()) {
+					selected.add(vertex);
+				}
+			}
 		}
+		List<Integer> result = new ArrayList<>();
+		for (Integer i : selected) {
+			result.add(i);
+		}
+		return result;
+	}
 
+	/**
+	 * Method to remove all vertecies except given ones from a given graph
+	 * Important! graph will be modified
+	 *
+	 * @param graph
+	 * @param toBeLeft - set of vertecies to be left after remove
+	 * @return graph with removed vertecies
+	 */
+	public static Map<Integer, List<Integer>> removeExcept(Map<Integer, List<Integer>> graph, Set<Integer> toBeLeft) {
 		Map<Integer, List<Integer>> newGraph = new HashMap<>();
 		for (Integer vertex : graph.keySet()) {
 			if (toBeLeft.contains(vertex)) {
@@ -38,6 +65,14 @@ public class RemoveUtil {
 		return newGraph;
 	}
 
+	/**
+	 * Method to remove given percent of vertecies
+	 * Important! graph will be modified
+	 *
+	 * @param graph
+	 * @param percentToBeRemoved
+	 * @return graph with removed vertecies
+	 */
 	public static Map<Integer, List<Integer>> removeRandom(Map<Integer, List<Integer>> graph, int percentToBeRemoved) {
 		Random random = new Random();
 		int size = graph.size();
@@ -76,6 +111,14 @@ public class RemoveUtil {
 		return result;
 	}
 
+	/**
+	 * Method to remove given percent of vertecies with biggest powers
+	 * Important! graph will be modified
+	 *
+	 * @param graph
+	 * @param percentToBeRemoved
+	 * @return graph with removed vertecies
+	 */
 	public static Map<Integer, List<Integer>> removeWithBiggestPower(Map<Integer, List<Integer>> graph, int percentToBeRemoved) {
 		int size = graph.size();
 		int amountToBeRemoved = size * percentToBeRemoved / 100;
@@ -121,52 +164,5 @@ public class RemoveUtil {
 		}
 
 		return result;
-	}
-
-	private static Set breadthFirstSearch(Map<Integer, List<Integer>> graph, int sourceVertex) {
-		Queue<Integer> queue = new PriorityQueue<>();
-		Map<Integer, Integer> distanceToSource = new HashMap<>();
-
-		Set<Integer> result = new HashSet<>();
-		Map<Integer, Boolean> isVisited = new HashMap<>();
-		for (Integer vertex : graph.keySet()) {
-			isVisited.put(vertex, false);
-			distanceToSource.put(vertex, 0);
-		}
-
-		result.add(sourceVertex);
-		isVisited.put(sourceVertex, true);
-		distanceToSource.put(sourceVertex, 0);
-		queue.add(sourceVertex);
-
-		int eccentricity = 0;
-		while (!queue.isEmpty()) {
-			int thisVertex = queue.remove();
-
-			List<Integer> adjacent = graph.get(thisVertex);
-
-			for (int adjacentVertex : adjacent) {
-				if (!isVisited.get(adjacentVertex)) {
-					distanceToSource.put(adjacentVertex, distanceToSource.get(thisVertex) + 1);
-
-					isVisited.put(adjacentVertex, true);
-					result.add(adjacentVertex);
-
-					queue.add(adjacentVertex);
-
-					if (distanceToSource.get(adjacentVertex) > eccentricity) {
-						eccentricity = distanceToSource.get(adjacentVertex);
-					}
-				}
-
-				if (result.size() >= 500) {
-					break;
-				}
-			}
-			if (result.size() >= 500) {
-				return result;
-			}
-		}
-		return null;
 	}
 }

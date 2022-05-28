@@ -6,18 +6,28 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+/**
+ * Utility class for counting distance parameters of a graph
+ */
 public class DistanceUtil {
 	private Map<Integer, Integer> eccentricities;
+	Map<Integer, Boolean> visited = new HashMap<>();
 
 	private int radius;
 	private int diameter;
 
-	public DistanceUtil(Map<Integer, List<Integer>> graph) {
+	/**
+	 * Constructor
+	 *
+	 * @param graph
+	 * @param selected - sample list of vertecies to count distances
+	 */
+	public DistanceUtil(Map<Integer, List<Integer>> graph, List<Integer> selected) {
 		eccentricities = new HashMap<>();
 		radius = Integer.MAX_VALUE;
 		diameter = Integer.MIN_VALUE;
 
-		for (Integer vertex : graph.keySet()) {
+		for (Integer vertex : selected) {
 			eccentricities.put(vertex, breadthFirstSearch(graph, vertex));
 
 			if (eccentricities.get(vertex) < radius) {
@@ -27,6 +37,105 @@ public class DistanceUtil {
 				diameter = eccentricities.get(vertex);
 			}
 		}
+	}
+
+	/**
+	 * Method for counting path between two vertecies using breadth first search method
+	 *
+	 * @param graph
+	 * @param startVertex
+	 * @param endVertex
+	 * @return distance
+	 */
+	public int BFS(Map<Integer, List<Integer>> graph, int startVertex, int endVertex) {
+		int counter = 0;
+		Queue<Integer> q1 = new PriorityQueue<>();
+		Queue<Integer> q2 = new PriorityQueue<>();
+
+		q1.add(startVertex);
+		visited.put(startVertex, true);
+
+		while (true) {
+			if (q1.isEmpty() && q2.isEmpty()) {
+				return -1;
+			}
+			if (counter % 2 == 0) {
+				int vertex = q1.remove();
+				if (vertex == endVertex) {
+					return counter;
+				}
+
+				List<Integer> neighbours = graph.get(vertex);
+				for (int i = 0; i < neighbours.size(); i++) {
+					q2.add(neighbours.get(i));
+					visited.put(neighbours.get(i), true);
+				}
+
+				if (q1.isEmpty()) {
+					counter++;
+				}
+			}
+			if (counter % 2 != 0) {
+				int vertex = q2.remove();
+				if (vertex == endVertex) {
+					return counter;
+				}
+
+				List<Integer> neighbours = graph.get(vertex);
+				for (int i = 0; i < neighbours.size(); i++) {
+					q1.add(neighbours.get(i));
+					visited.put(neighbours.get(i), true);
+				}
+
+				if (q2.isEmpty()) {
+					counter++;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Method to get vertecies with their eccentricities
+	 *
+	 * @return map - keys are vertecies, values are eccentricities
+	 */
+	public Map<Integer, Integer> getEccentricities() {
+		return eccentricities;
+	}
+
+	/**
+	 * Method to get radius of a given graph
+	 *
+	 * @return radius
+	 */
+	public int getRadius() {
+		return radius;
+	}
+
+	/**
+	 * Method to get diameter of a given graph
+	 *
+	 * @return diameter
+	 */
+	public int getDiameter() {
+		return diameter;
+	}
+
+	/**
+	 * Method to get 90-percentile of a given graph
+	 *
+	 * @rerturn 90-percentile
+	 */
+	public int countPercentile() {
+		double percentile = diameter * 0.9;
+
+		int result = -1;
+		for (Integer vertex : eccentricities.keySet()) {
+			if (eccentricities.get(vertex) <= percentile && eccentricities.get(vertex) >= result) {
+				result = eccentricities.get(vertex);
+			}
+		}
+		return result;
 	}
 
 	private int breadthFirstSearch(Map<Integer, List<Integer>> graph, int sourceVertex) {
@@ -63,29 +172,5 @@ public class DistanceUtil {
 		}
 
 		return eccentricity;
-	}
-
-	public Map<Integer, Integer> getEccentricities() {
-		return eccentricities;
-	}
-
-	public int getRadius() {
-		return radius;
-	}
-
-	public int getDiameter() {
-		return diameter;
-	}
-
-	public int countPercentile() {
-		double percentile = diameter * 0.9;
-
-		int result = -1;
-		for (Integer vertex : eccentricities.keySet()) {
-			if (eccentricities.get(vertex) <= percentile && eccentricities.get(vertex) >= result) {
-				result = eccentricities.get(vertex);
-			}
-		}
-		return result;
 	}
 }
